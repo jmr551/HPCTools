@@ -1,17 +1,45 @@
 1. What is the purpose of this code? What does the code compute to get it?
 
-   [...]
+   Se puede ver de dos maneras. La más sencilla y natural de pensar es que es un código que resuelve un sistema de ecuaciones lineal Ax=b. Pero, esta explicación se queda corta porque en realidad se puede resolver el mismo sistema de ecuaciones pero para diferentes incógnitas. Entonces, el sistema es capaz de resolver, por ejemplo, Ax_1=b_1, Ax_2=b_2, etc, en forma simultánea. Entonces, definamos la matriz ampliada de los x_i y la de los b_i así:
+   X=[x_1|x_2|...]
+   B=[b_1|b_2|...]
+   Luego, el sistema es capaz de resolver AX=B en forma simultánea, proveyendo la respuesta en cada columna correspondiente. 
 
+El método que utiliza la librería es el de la factorización A=LU, donde L es una matriz triangular inferior y la U es una matriz triangular superior. Lo más costoso de este método es dicha factorización, ya que, luego, resolver el sistema es más sencillo.  
 2. Briefly describe alternative mathematical methods to perform the same operation.
 
-   [...]
+   Métodos, existen muchos. Lo que básicamente se busca es hallar la inversa de la matriz A, ya que:
+   AX=B => (A^-1)*A*X=(A^-1)B => X=(A^-1)*B, que es la solución buscada.
+Algúnos métodos:
+- Teorema de Laplace
+- Escalonamiento (Gauss)
+- Gauss-Jordan
+- Factorización ALU (La utilizada por nuestra librería OpenBLAS)
 
 3. What alternative(s) do you think is more demanding, from a computational point of view and in terms of memory consumption?
 
-   [...]
+El método del teorema de Laplace sería el más demandante ya que, a medida que el orden de la matriz va creciendo, el problema crece de forma factorial. La matriz de orden n se descompone en n matrices de orden n-1. A su vez, cada matriz de orden n-1 se descompone en n-1 matrices de orden n-2. Y así sucesivamente hasta llegar al orden 3, donde ya se podrían utilizar otros métodos para hallar el determinante (La regla de Sarrus, por ejemplo). De esta manera se puede ver que este método exige almacenar una gran cantidad de datos a medida que la matriz es más grande.  
 
 4. What do you think can be the best candidate(s) for a parallel implementation?
 
-   [...]
+Claramente los mejores candidatos serían los de Gauss-Jordan y ALU debido a que, para cada pivot, se podrían realizar las operaciones por filas en forma independiente, y luego realizar una sincronización, para luego pasar al siguiente pivot. 
 
 5. Choose one of the described methods to code your own sequential implementation in C, using the provided code skeleton.
+
+
+
+OBS - Me gustaría comentar algunas cosas:
+
+1. Cambié la semilla de tal manera a que de verdad se generen números aleatorios. El asunto con el código actual es que siempre se generaba la misma matriz para a, aref, b y bref, por lo que la solución siempre era la matriz identidad. Esto sacaba generalidad al problema, y quise probar si podía resolver sistemas más generales.
+
+2. Basado en lo anterior, utilizo la generación aleatoria de las 4 matrices, ya que la función reserva la memoria necesaria con malloc. Pero, como quiero comprobar que los resultados sean los mismos entre (aref,bref) y (a,b), entonces realizo una copia de las matrices aref y bref, para resolver el mismo problema pero con mi implementación. Aclaro que estoy consciente que podía reservar la memoria para las matrices y copiarlas después, pero por economía de mi tiempo no lo hago.
+
+3. Mi implementación no contempla la necesidad de realizar permutaciones, por lo que existe un número (pequeño) de matrices CON solución que mi código no sería capaz de resolver. También existirán los problemas sin solución, y mi implementación actual no es capaz de distinguir entre ambas.
+
+4. Para comprobar que lo que dije en 1 era cierto, hice un código (que está comentado) que genera una matriz identidad. Haciendo así me salía que mi solución siempre era correcta XD.
+
+5. Tengo varias funciones que me ayudaron a depurar mi código. Los dejo ahí como prueba de mi esfuerzo.
+
+6. Me pareció muy interesante este desafío. La asignatura me es difícil porque hay muchas cosas que no sé, pero me estoy poniendo al día con esfuerzo.
+
+7. Quedo atento a cualquier feedback que me pueda ayudar a mejorar. :)
